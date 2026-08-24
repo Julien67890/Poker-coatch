@@ -458,13 +458,21 @@ const App = {
     if (result.wentToShowdown) {
       for (const p of remaining) {
         const isWinner = result.winners.includes(p.id);
-        const cardsHTML = p.holeCards.map(c => UITable.cardHTML(c)).join('');
-        const rankName = result.results[p.id]?.rankName || '';
+        const holeCardsHTML = p.holeCards.map(c => UITable.cardHTML(c)).join('');
+        const rankResult = result.results[p.id];
+        const rankName = rankResult?.rankName || '';
+        // Affiche aussi les 5 cartes exactes qui composent la meilleure main (main + board),
+        // pour que le classement affiché (ex. "Double paire") soit toujours vérifiable visuellement
+        // même quand il provient en partie ou entièrement du board commun.
+        const bestFiveHTML = rankResult?.bestFive
+          ? `<span class="cards best-five">${rankResult.bestFive.map(c => UITable.cardHTML(c)).join('')}</span>`
+          : '';
         handsHTML += `<div class="showdown-hand-row">
           <span>${p.id === this.humanSeatId ? 'Toi' : p.name}${isWinner ? ' 🏆' : ''}</span>
-          <span class="cards">${cardsHTML}</span>
+          <span class="cards">${holeCardsHTML}</span>
           <span style="opacity:0.7;">${rankName}</span>
-        </div>`;
+        </div>
+        ${bestFiveHTML ? `<div class="showdown-besthand-row"><span class="besthand-label">Meilleure main :</span>${bestFiveHTML}</div>` : ''}`;
       }
     }
 
