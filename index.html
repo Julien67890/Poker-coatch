@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b3d2e">
+<title>Poker Coach — Apprends le Texas Hold'em</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== ÉCRAN D'ACCUEIL / CONFIGURATION ===================== -->
+<div id="screen-home" class="screen active">
+  <div class="home-container">
+    <div class="home-header">
+      <h1 class="logo">♠ Poker <span>Coach</span> ♦</h1>
+      <p class="tagline">Apprends le Texas Hold'em avec un coach IA personnalisé</p>
+    </div>
+
+    <div class="home-grid">
+      <div class="home-card" id="card-mode-selection">
+        <h2>1. Choisis ton mode</h2>
+        <div class="mode-options">
+          <button class="mode-btn" data-mode="learning">
+            <span class="mode-icon">🎓</span>
+            <span class="mode-title">Apprentissage</span>
+            <span class="mode-desc">Le coach t'explique chaque décision, avant et après</span>
+          </button>
+          <button class="mode-btn" data-mode="interactive">
+            <span class="mode-icon">🎮</span>
+            <span class="mode-title">Interactif</span>
+            <span class="mode-desc">Jeu libre, demande le coach quand tu veux</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="home-card" id="card-table-selection">
+        <h2>2. Choisis ta table</h2>
+        <div class="mode-options">
+          <button class="mode-btn" data-table="headsup">
+            <span class="mode-icon">⚔️</span>
+            <span class="mode-title">Tête-à-tête</span>
+            <span class="mode-desc">Toi contre 1 IA — rythme rapide</span>
+          </button>
+          <button class="mode-btn" data-table="sixmax">
+            <span class="mode-icon">🪑</span>
+            <span class="mode-title">Table 6 joueurs</span>
+            <span class="mode-desc">Toi + 5 IA — expérience complète</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="home-card" id="card-difficulty-selection">
+        <h2>3. Difficulté de l'IA</h2>
+        <div class="difficulty-slider-row">
+          <input type="range" id="difficulty-slider" min="1" max="5" value="2" step="1">
+          <div class="difficulty-label">
+            <span id="difficulty-name">Intermédiaire</span>
+            <span id="difficulty-desc" class="difficulty-desc"></span>
+          </div>
+        </div>
+        <p class="locked-note" id="difficulty-locked-note" style="display:none;">
+          🔒 Difficulté verrouillée sur Débutant/Intermédiaire en mode Apprentissage
+        </p>
+      </div>
+
+      <div class="home-card" id="card-bankroll">
+        <h2>4. Bankroll de départ</h2>
+        <div class="bankroll-row">
+          <input type="range" id="bankroll-slider" min="500" max="10000" step="100" value="1000">
+          <span id="bankroll-value">1000 jetons</span>
+        </div>
+        <p class="blinds-preview" id="blinds-preview">Blinds : 5 / 10</p>
+      </div>
+    </div>
+
+    <div class="home-actions">
+      <button id="btn-start-session" class="btn-primary btn-large">Commencer la session ▶</button>
+      <button id="btn-open-learning-center" class="btn-secondary">📖 Centre d'apprentissage</button>
+      <button id="btn-open-dashboard" class="btn-secondary">📊 Statistiques</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ÉCRAN TABLE DE JEU ===================== -->
+<div id="screen-table" class="screen">
+  <div class="table-layout">
+
+    <!-- Panneau gauche : état du jeu -->
+    <aside class="panel panel-left">
+      <div class="game-state-box">
+        <div class="table-name" id="table-name">Table — Niveau 2</div>
+        <div class="hand-number">Main <span id="hand-number">1</span></div>
+        <div class="pot-display">
+          <span class="pot-label">POT</span>
+          <span class="pot-value" id="pot-value">0</span>
+        </div>
+        <div class="blinds-display">
+          Blinds : <span id="blinds-display">5 / 10</span>
+        </div>
+      </div>
+      <button id="btn-back-home" class="btn-tertiary">← Menu</button>
+      <button id="btn-view-dashboard-ingame" class="btn-tertiary">📊 Stats</button>
+    </aside>
+
+    <!-- Centre : table de poker -->
+    <main class="table-center">
+      <div class="poker-table" id="poker-table">
+        <div class="community-cards" id="community-cards"></div>
+        <div class="pot-chip-display" id="pot-chip-display">0</div>
+        <div class="opponent-seats" id="opponent-seats"></div>
+        <div class="player-seat" id="player-seat">
+          <div class="seat-cards" id="player-cards"></div>
+          <div class="seat-info">
+            <span class="seat-name">Toi</span>
+            <span class="seat-stack" id="player-stack">1000</span>
+          </div>
+        </div>
+      </div>
+      <div class="decision-timer" id="decision-timer" style="display:none;">
+        <div class="timer-bar" id="timer-bar"></div>
+        <span id="timer-text">30s</span>
+      </div>
+    </main>
+
+    <!-- Panneau droit : coach et décision -->
+    <aside class="panel panel-right">
+      <div class="hand-analysis-box" id="hand-analysis-box">
+        <div class="analysis-row"><span>Ta main</span><strong id="analysis-hand">—</strong></div>
+        <div class="analysis-row"><span>Board</span><strong id="analysis-board">—</strong></div>
+        <div class="analysis-row equity-row"><span>Ton équité</span><strong id="analysis-equity">—</strong></div>
+        <div class="analysis-row"><span>Pot odds requis</span><strong id="analysis-potodds">—</strong></div>
+      </div>
+
+      <div class="coach-panel" id="coach-panel" style="display:none;"></div>
+
+      <button id="btn-ask-coach" class="btn-coach" style="display:none;">🧠 Demander au coach</button>
+
+      <div class="action-panel" id="action-panel">
+        <div class="raise-slider-row" id="raise-slider-row" style="display:none;">
+          <input type="range" id="raise-slider" min="0" max="1000" value="0">
+          <span id="raise-amount-display">0</span>
+        </div>
+        <div class="action-buttons">
+          <button id="btn-fold" class="action-btn btn-fold">Se coucher</button>
+          <button id="btn-check" class="action-btn btn-check">Check</button>
+          <button id="btn-call" class="action-btn btn-call">Suivre</button>
+          <button id="btn-raise" class="action-btn btn-raise">Relancer</button>
+          <button id="btn-allin" class="action-btn btn-allin">Tapis</button>
+        </div>
+      </div>
+
+      <div class="quick-stats-bar" id="quick-stats-bar">
+        <span id="quick-stats-text">0 mains | +0 jetons | 0% équité moy.</span>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Overlay résultat de main -->
+  <div id="showdown-overlay" class="overlay" style="display:none;">
+    <div class="showdown-box">
+      <h3 id="showdown-title">Résultat</h3>
+      <div id="showdown-hands"></div>
+      <p id="showdown-summary"></p>
+      <div id="coach-feedback" class="coach-feedback"></div>
+      <button id="btn-next-hand" class="btn-primary">Main suivante ▶</button>
+    </div>
+  </div>
+
+  <!-- Overlay session terminée -->
+  <div id="session-end-overlay" class="overlay" style="display:none;">
+    <div class="showdown-box">
+      <h3>Session terminée</h3>
+      <p id="session-end-summary"></p>
+      <button id="btn-session-end-dashboard" class="btn-primary">Voir les statistiques 📊</button>
+      <button id="btn-session-end-home" class="btn-secondary">Retour au menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ÉCRAN DASHBOARD STATS ===================== -->
+<div id="screen-dashboard" class="screen">
+  <div class="dashboard-header">
+    <h1>📊 Statistiques</h1>
+    <button id="btn-dashboard-close" class="btn-tertiary">✕ Fermer</button>
+  </div>
+  <div class="dashboard-tabs">
+    <button class="tab-btn active" data-tab="overview">Vue d'ensemble</button>
+    <button class="tab-btn" data-tab="position">Position</button>
+    <button class="tab-btn" data-tab="hands">Mains</button>
+    <button class="tab-btn" data-tab="progression">Progression</button>
+    <button class="tab-btn" data-tab="history">Historique</button>
+  </div>
+  <div class="dashboard-content" id="dashboard-content">
+    <!-- rempli dynamiquement par ui-stats-dashboard.js -->
+  </div>
+</div>
+
+<!-- ===================== ÉCRAN CENTRE D'APPRENTISSAGE ===================== -->
+<div id="screen-learning" class="screen">
+  <div class="dashboard-header">
+    <h1>📖 Centre d'apprentissage</h1>
+    <button id="btn-learning-close" class="btn-tertiary">✕ Fermer</button>
+  </div>
+  <div class="learning-content" id="learning-content">
+    <!-- rempli dynamiquement par learning-mode.js -->
+  </div>
+</div>
+
+<!-- Toast / notifications -->
+<div id="toast-container"></div>
+
+<script src="js/config.js"></script>
+<script src="js/poker-engine.js"></script>
+<script src="js/ai-opponent.js"></script>
+<script src="js/table-engine.js"></script>
+<script src="js/coach.js"></script>
+<script src="js/stats-manager.js"></script>
+<script src="js/ui-table.js"></script>
+<script src="js/ui-coach-panel.js"></script>
+<script src="js/ui-stats-dashboard.js"></script>
+<script src="js/learning-mode.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
