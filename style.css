@@ -501,6 +501,16 @@ input[type="range"] {
 #showdown-hands { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
 .showdown-hand-row { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; }
 .showdown-hand-row .cards { display: flex; gap: 3px; }
+.showdown-besthand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 2px 0 8px;
+}
+.showdown-besthand-row .besthand-label { font-size: 0.68rem; opacity: 0.55; }
+.showdown-besthand-row .best-five { display: flex; gap: 2px; }
+.showdown-besthand-row .best-five .playing-card { width: 24px; height: 34px; font-size: 0.6rem; }
 #showdown-summary { opacity: 0.85; font-size: 0.9rem; margin-bottom: 10px; }
 .coach-feedback {
   background: rgba(212,175,106,0.1);
